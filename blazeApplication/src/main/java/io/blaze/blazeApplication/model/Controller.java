@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
@@ -55,8 +53,8 @@ public class Controller {
 		return result;
 	}
 	
-	@GetMapping("/find/{name}")
-	public String findUserbyName(@PathVariable String name) {
+	@GetMapping("/users/{name}")
+	public String findUserByName(@PathVariable String name) {
 		List<User> current_user_data = appRepository.findByName(name);
 		int list_size = current_user_data.size();
 		Iterator<User> ite = current_user_data.iterator();
@@ -77,7 +75,7 @@ public class Controller {
 	}
 	
 	@PostMapping("/users/{name}")
-	public ResponseEntity<String> repositoryLoader(@PathVariable String name) throws DataAccessException{
+	public ResponseEntity<String> loadUserByName(@PathVariable String name) throws DataAccessException{
 		if(this.findbyUserInfobyName(name) != null) {
 			return new ResponseEntity<>("This user is already imported.", HttpStatus.BAD_REQUEST);
 		}
@@ -90,8 +88,30 @@ public class Controller {
 		return new ResponseEntity<String>("Successful.", HttpStatus.OK);
 	}
 	
+	@PutMapping("/users/{name}")
+		public ResponseEntity<String> updateUserByName(@PathVariable String name){
+			if(this.findbyUserInfobyName(name) == null) {
+				return new ResponseEntity<>("There is no user with name " + name + " to update.", HttpStatus.BAD_REQUEST);
+			}
+			List<User> updatedUserRepositoryList = appRepository.findByName(name);
+			Iterator<User> ite = updatedUserRepositoryList.iterator();
+			while(ite.hasNext()) {
+				User updatedUser = ite.next();
+				appRepository.deleteById(updatedUser.getId());
+			}
+			Repository[] updatedRepository = service.repositoryLoader(name);
+			url_repo_map.replace(name, updatedRepository);
+			for(int i=0;i<updatedRepository.length;i++) {
+				reponame_index_map.replace(updatedRepository[i].getName(), i);
+				appRepository.save(new User(name, updatedRepository[i].getHtml_url()));
+			}
+			return new ResponseEntity<String>("Successfully updated.", HttpStatus.OK);
+			
+		}
+	
+	
 	@DeleteMapping("/users/{name}")
-	public ResponseEntity<String> deleteCustomerbyName(@PathVariable String name){
+	public ResponseEntity<String> deleteUserbyName(@PathVariable String name){
 		List<User> current_user_repo_list = appRepository.findByName(name);
 		if(findbyUserInfobyName(name) == null) return new ResponseEntity<String>("Bad Request", HttpStatus.BAD_REQUEST);
 		Iterator<User> ite = current_user_repo_list.iterator();
