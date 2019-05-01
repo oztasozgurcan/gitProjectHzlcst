@@ -21,11 +21,11 @@ public class User implements Serializable{
 	@Column(name = "name")
 	private String name;
 	@Column(name = "repository_info")
-	private  String repository_info;
+	private String repository_info;
 	
 	public User() {
-		this.name = "";
-		this.repository_info = "";
+		this.name = "*";
+		this.repository_info = "*";
 	}
 	
 	public User(String name, String repository_info) {
@@ -49,12 +49,12 @@ public class User implements Serializable{
 		this.name = name;
 	}
 
-	public String getRepository() {
+	public String getRepository_Info() {
 		return repository_info;
 	}
 
-	public void setRepository(String repository) {
-		this.repository_info = repository;
+	public void setRepository_Info(String repository_info) {
+		this.repository_info = repository_info;
 	}
 	
 }
