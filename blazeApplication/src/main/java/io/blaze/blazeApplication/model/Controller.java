@@ -34,11 +34,6 @@ public class Controller {
 	private Map<String, Repository[]> url_repo_map = new HashMap<String, Repository[]>();
 	private Map<String, Integer> reponame_index_map = new HashMap<String, Integer>();
 	
-	@GetMapping("/index")
-	public String indexloader() {
-		return "Index page.";
-	}
-	
 	@GetMapping("/users")
 	public String getAllUserRepos() {
 		String result = "[";
@@ -81,7 +76,7 @@ public class Controller {
 		return result;
 	}
 	
-	@GetMapping("/users/{name}")
+	@PostMapping("/users/{name}")
 	public ResponseEntity<String> repositoryLoader(@PathVariable String name) throws DataAccessException{
 		if(this.findbyUserInfobyName(name) != null) {
 			return new ResponseEntity<>("This user is already imported.", HttpStatus.BAD_REQUEST);
