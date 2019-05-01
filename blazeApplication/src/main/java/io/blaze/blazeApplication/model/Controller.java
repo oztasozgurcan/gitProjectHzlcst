@@ -2,8 +2,10 @@ package io.blaze.blazeApplication.model;
 
 import io.blaze.blazeApplication.repository.*;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.gson.Gson;
+
 @RestController
 public class Controller {
 	
@@ -27,46 +31,79 @@ public class Controller {
 	@Autowired
 	private Service service;
 	
+	private Map<String, Repository[]> url_repo_map = new HashMap<String, Repository[]>();
+	private Map<String, Integer> reponame_index_map = new HashMap<String, Integer>();
+	
 	@GetMapping("/index")
 	public String indexloader() {
 		return "Index page.";
 	}
 	
 	@GetMapping("/users")
-	public String getAllUserInfo() {
-		String result = "";
-		Iterable<User> current = appRepository.findAll();
-		Iterator<User> ite = current.iterator();
-		while(ite.hasNext()) {
-			result += ite.next().getName() + ",\t\t";
-		}
-		return result.toString();
+	public String getAllUserRepos() {
+		String result = "[";
+		Iterable<User> current_repolist = appRepository.findAll();
+		Iterator<User> ite = current_repolist.iterator();
+		long current_repolist_size = appRepository.count();
+		long current_repo = 1;
+		do {
+			User current_user = ite.next();
+			Gson gson = new Gson();
+			result += gson.toJson(current_user);
+			result += ",";
+			current_repo++;
+		}while(current_repo != current_repolist_size-1);
+		User last_user = ite.next();
+		Gson gson = new Gson();
+		result += gson.toJson(last_user);
+		result += "]";
+		return result;
 	}
 	
 	@GetMapping("/find/{name}")
 	public String findUserbyName(@PathVariable String name) {
-		Optional<User> current_user_data = appRepository.findByName(name);
-		User current_user = current_user_data.get();
-		String result = "";
-		result += current_user.getName() + ", " + 
-		current_user.getId() + ", " +current_user.getRepository_Info() +"\n";	
+		List<User> current_user_data = appRepository.findByName(name);
+		int list_size = current_user_data.size();
+		Iterator<User> ite = current_user_data.iterator();
+		String result = "[";
+		int current_user_id = 1;
+		do {
+			User current_user = ite.next();			
+			Gson gson = new Gson();
+			result += gson.toJson(current_user);
+			result += ",";
+			current_user_id++;
+		}while(current_user_id != list_size-1);
+		User last_user = ite.next();
+		Gson gson = new Gson();
+		result += gson.toJson(last_user);
+		result += "]";
 		return result;
 	}
 	
-	@PostMapping("/users/{name}")
-	public String repositoryLoader(@PathVariable String name) throws DataAccessException{
+	@GetMapping("/users/{name}")
+	public ResponseEntity<String> repositoryLoader(@PathVariable String name) throws DataAccessException{
 		if(this.findbyUserInfobyName(name) != null) {
-			return "This user is already imported.";
+			return new ResponseEntity<>("This user is already imported.", HttpStatus.BAD_REQUEST);
 		}
-		String result = service.repositoryLoader(name);
-		appRepository.save(new User(name, "Successful."));
-		return result;
+		Repository[] current_repository = service.repositoryLoader(name);
+		url_repo_map.put(name, current_repository);
+		for(int i=0;i<current_repository.length;i++) {
+			reponame_index_map.put(current_repository[i].getName(), i);
+			appRepository.save(new User(name, current_repository[i].getHtml_url()));
+		}		
+		return new ResponseEntity<String>("Successful.", HttpStatus.OK);
 	}
 	
 	@DeleteMapping("/users/{name}")
 	public ResponseEntity<String> deleteCustomerbyName(@PathVariable String name){
-		User deleted_user = findbyUserInfobyName(name);
-		appRepository.deleteById(deleted_user.getId());
+		List<User> current_user_repo_list = appRepository.findByName(name);
+		if(findbyUserInfobyName(name) == null) return new ResponseEntity<String>("Bad Request", HttpStatus.BAD_REQUEST);
+		Iterator<User> ite = current_user_repo_list.iterator();
+		while(ite.hasNext()) {
+			User current_user = ite.next();
+			appRepository.deleteById(current_user.getId());
+		}
 		return new ResponseEntity<>("All user data is deleted.", HttpStatus.OK);
 	}
 	
@@ -77,11 +114,11 @@ public class Controller {
 	}
 	
 	public User findbyUserInfobyName(String name) {
-		Optional<User> desired_user = appRepository.findByName(name);
-		if(desired_user.isPresent()) {
-			return desired_user.get();
+		List<User> desired_user = appRepository.findByName(name);
+		if(!desired_user.iterator().hasNext()) {
+			return null;
 		}
-		return null;
+		return desired_user.iterator().next();
 	}
 	
 }

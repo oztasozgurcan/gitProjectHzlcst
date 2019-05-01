@@ -8,5 +8,5 @@ import org.springframework.data.repository.CrudRepository;
 import io.blaze.blazeApplication.model.User;
 
 public interface AppRepository extends CrudRepository<User, Integer>{
-	Optional<User> findByName(String name);
+	List<User> findByName(String name);
 }
