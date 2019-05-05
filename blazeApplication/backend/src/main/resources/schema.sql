@@ -3,5 +3,6 @@ USE hazelcast;
 CREATE TABLE IF NOT EXISTS User(
 	id int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
-    repository_info VARCHAR(1000) NOT NULL)
+    repository_name VARCHAR(255) NOT NULL,
+    repository_link VARCHAR(1000) NOT NULL,
     ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

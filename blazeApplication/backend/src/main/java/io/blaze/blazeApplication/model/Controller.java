@@ -39,17 +39,21 @@ public class Controller {
 		Iterator<User> ite = current_repolist.iterator();
 		long current_repolist_size = appRepository.count();
 		long current_repo = 1;
-		do {
-			User current_user = ite.next();
+		try {
+			do {
+				User current_user = ite.next();
+				Gson gson = new Gson();
+				result += gson.toJson(current_user);
+				result += ",";
+				current_repo++;
+			}while(current_repo != current_repolist_size-1);
+			User last_user = ite.next();
 			Gson gson = new Gson();
-			result += gson.toJson(current_user);
-			result += ",";
-			current_repo++;
-		}while(current_repo != current_repolist_size-1);
-		User last_user = ite.next();
-		Gson gson = new Gson();
-		result += gson.toJson(last_user);
-		result += "]";
+			result += gson.toJson(last_user);
+			result += "]";
+		}catch (Exception e) {
+			return "Database is empty.";
+		}
 		return result;
 	}
 	
@@ -83,7 +87,7 @@ public class Controller {
 		url_repo_map.put(name, current_repository);
 		for(int i=0;i<current_repository.length;i++) {
 			reponame_index_map.put(current_repository[i].getName(), i);
-			appRepository.save(new User(name, current_repository[i].getHtml_url()));
+			appRepository.save(new User(name, current_repository[i].getName(), current_repository[i].getHtml_url()));
 		}		
 		return new ResponseEntity<String>("Successful.", HttpStatus.OK);
 	}
@@ -103,7 +107,7 @@ public class Controller {
 			url_repo_map.replace(name, updatedRepository);
 			for(int i=0;i<updatedRepository.length;i++) {
 				reponame_index_map.replace(updatedRepository[i].getName(), i);
-				appRepository.save(new User(name, updatedRepository[i].getHtml_url()));
+				appRepository.save(new User(name, updatedRepository[i].getName(), updatedRepository[i].getHtml_url()));
 			}
 			return new ResponseEntity<String>("Successfully updated.", HttpStatus.OK);
 			
