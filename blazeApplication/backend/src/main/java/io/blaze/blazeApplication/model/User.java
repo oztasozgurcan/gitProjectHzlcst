@@ -20,17 +20,20 @@ public class User implements Serializable{
 	private int id;
 	@Column(name = "name")
 	private String name;
+	@Column(name = "repository_name")
+	private String repository_name;
 	@Column(name = "repository_info")
-	private String repository_info;
+	private String repository_link;
 	
 	public User() {
 		this.name = "*";
-		this.repository_info = "*";
+		this.repository_link = "*";
 	}
 	
-	public User(String name, String repository_info) {
+	public User(String name, String repository_name, String repository_link) {
 		this.name = name;
-		this.repository_info = repository_info;
+		this.repository_name = repository_name;
+		this.repository_link = repository_link;
 	}
 
 	public int getId() {
@@ -50,11 +53,11 @@ public class User implements Serializable{
 	}
 
 	public String getRepository_Info() {
-		return repository_info;
+		return repository_link;
 	}
 
 	public void setRepository_Info(String repository_info) {
-		this.repository_info = repository_info;
+		this.repository_link = repository_info;
 	}
 	
 }
