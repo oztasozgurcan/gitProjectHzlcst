@@ -15,21 +15,3 @@ public class BlazeApplication {
 	}
 
 }
-
-/*
- * String url = "https://api.github.com/users/oztasozgurcan/repos";
- * URL obj = new URL(url);
- * HTTPUrlConnection con = (HTTPUrlConnection) obj.openConnection();
- * con.setRequestMethod("GET");
- * con.setRequestProperty("User-Agent", "Mozilla/5.0");
- * BufferedReader in = new BufferedReader(
- * 		new InputStreamReader(con.getInputStream()));
- * String inputLine;	
- * StringBuffer Response = new StringBuffer();
- * while((inputLine = in.readLine()) != null){
- * 		response.append(inputLine);
- * } in.close();
- * 
- * System.out.println(response.toString());
- * 
-*/
